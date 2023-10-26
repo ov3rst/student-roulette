@@ -8,19 +8,19 @@
     "net6.0": []
   },
   "packageFolders": {
-    "C:\\Users\\theol\\.nuget\\packages\\": {}
+    "C:\\Users\\Oliver Tejeda\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\theol\\OneDrive\\Escritorio\\student-roulette\\student-roulette.csproj",
+      "projectUniqueName": "C:\\Users\\Oliver Tejeda\\Desktop\\student-roulette\\student-roulette.csproj",
       "projectName": "student-roulette",
-      "projectPath": "C:\\Users\\theol\\OneDrive\\Escritorio\\student-roulette\\student-roulette.csproj",
-      "packagesPath": "C:\\Users\\theol\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\theol\\OneDrive\\Escritorio\\student-roulette\\obj\\",
+      "projectPath": "C:\\Users\\Oliver Tejeda\\Desktop\\student-roulette\\student-roulette.csproj",
+      "packagesPath": "C:\\Users\\Oliver Tejeda\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Oliver Tejeda\\Desktop\\student-roulette\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\theol\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Oliver Tejeda\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [

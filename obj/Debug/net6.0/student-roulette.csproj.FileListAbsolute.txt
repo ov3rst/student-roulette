@@ -26,3 +26,17 @@ C:\Users\theol\OneDrive\Escritorio\student-roulette\obj\Debug\net6.0\refint\stud
 C:\Users\theol\OneDrive\Escritorio\student-roulette\obj\Debug\net6.0\student-roulette.pdb
 C:\Users\theol\OneDrive\Escritorio\student-roulette\obj\Debug\net6.0\student-roulette.genruntimeconfig.cache
 C:\Users\theol\OneDrive\Escritorio\student-roulette\obj\Debug\net6.0\ref\student-roulette.dll
+C:\Users\Oliver Tejeda\Desktop\student-roulette\bin\Debug\net6.0\student-roulette.exe
+C:\Users\Oliver Tejeda\Desktop\student-roulette\bin\Debug\net6.0\student-roulette.deps.json
+C:\Users\Oliver Tejeda\Desktop\student-roulette\bin\Debug\net6.0\student-roulette.runtimeconfig.json
+C:\Users\Oliver Tejeda\Desktop\student-roulette\bin\Debug\net6.0\student-roulette.dll
+C:\Users\Oliver Tejeda\Desktop\student-roulette\bin\Debug\net6.0\student-roulette.pdb
+C:\Users\Oliver Tejeda\Desktop\student-roulette\obj\Debug\net6.0\student-roulette.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Oliver Tejeda\Desktop\student-roulette\obj\Debug\net6.0\student-roulette.AssemblyInfoInputs.cache
+C:\Users\Oliver Tejeda\Desktop\student-roulette\obj\Debug\net6.0\student-roulette.AssemblyInfo.cs
+C:\Users\Oliver Tejeda\Desktop\student-roulette\obj\Debug\net6.0\student-roulette.csproj.CoreCompileInputs.cache
+C:\Users\Oliver Tejeda\Desktop\student-roulette\obj\Debug\net6.0\student-roulette.dll
+C:\Users\Oliver Tejeda\Desktop\student-roulette\obj\Debug\net6.0\refint\student-roulette.dll
+C:\Users\Oliver Tejeda\Desktop\student-roulette\obj\Debug\net6.0\student-roulette.pdb
+C:\Users\Oliver Tejeda\Desktop\student-roulette\obj\Debug\net6.0\student-roulette.genruntimeconfig.cache
+C:\Users\Oliver Tejeda\Desktop\student-roulette\obj\Debug\net6.0\ref\student-roulette.dll

@@ -1,4 +1,5 @@
-﻿using static System.Console;
+﻿using System.IO;
+using static System.Console;
 
 namespace student_roulette
 {
@@ -6,8 +7,9 @@ namespace student_roulette
     // Agregar un reloj, para ver la hora actual en el programa, que se pueda elegir si mostrar o no.
     internal class Program
     {
-        static string rolPath = AppDomain.CurrentDomain.BaseDirectory + "/roles.txt";
-        static string studentsPath = AppDomain.CurrentDomain.BaseDirectory + "/students.txt";
+        static string rolPath = AppDomain.CurrentDomain.BaseDirectory + "/rols.txt";
+        static string studentsPath = AppDomain.CurrentDomain.BaseDirectory + "/students.txt"; 
+        static string historyPath = AppDomain.CurrentDomain.BaseDirectory + "/history.csv";
         static string[] completionMenuOptions =
         {
             "Reiniciar Ruleta", "Salir del Programa"
@@ -20,11 +22,16 @@ namespace student_roulette
 
         static string[] studentsOptions =
         {
-            "Ingresar nuevo Estudiante", "Modificar Estudiante", "Eliminar Estudiante", "Volver al menú"
+            "Ver todos los estudiantes", "Ingresar nuevo Estudiante", "Modificar Estudiante", "Eliminar Estudiante", "Volver al menú"
         };
 
-        static List<string> students = GetListOfStudents(studentsPath);
+        static string[] rolsOptions =
+        {
+            "Ver todos los Roles", "Ingresar nuevo Rol", "Modificar Rol", "Eliminar Rol", "Volver al menú"
+        };
 
+        static List<string> students = GetList(studentsPath);
+        static List<string> rols = GetList(rolPath);
         static List<int> repeatedNumbers = new();
         static bool exit = false, withAnimation = true;
         static int firstStudent, secondStudent;
@@ -35,10 +42,7 @@ namespace student_roulette
             while (!exit)
             {
                 Clear();
-                //StudentsMenu();
-                EditStudent();
-                //GetStudents();
-                //DrawResult(firstStudent, secondStudent);
+                InitialMenu();
                 ReadKey(true);
                 //if (!Login()) continue;
             }
@@ -77,25 +81,58 @@ namespace student_roulette
             repeatedNumbers.Add(secondStudent);
         }
 
-        static void StudentsMenu()
+        static void InitialMenu()
         {
-            int selectedOption = Menu(studentsOptions);
-
-            switch (selectedOption)
+            while (true)
             {
-                case 0:
-                    AddStudent();
-                    break;
-                case 1:
-                    break;
-                case 2:
-                    break;
-                case 3:
-                    break;
+                Clear();
+                int selectedOption = Menu(initialMenuOptions);
+
+                switch (selectedOption)
+                {
+                    case 0:
+                        GetStudents();
+                        break;
+                    case 1:
+                        OperationsMenu(studentsPath, studentsOptions, students);
+                        break;
+                    case 2:
+                        OperationsMenu(rolPath, rolsOptions, rols);
+                        break;
+                    case 3:
+                        Environment.Exit(0);
+                        break;
+                }
+            }
+        }
+        static void OperationsMenu(string path, string[] options, List<string> data)
+        {
+            while (true)
+            {
+                data = GetList(path);
+                int selectedOption = Menu(options);
+                Clear();
+
+                switch (selectedOption)
+                {
+                    case 0:
+                        ShowAll(path);
+                        break;
+                    case 1:
+                        Add(path, "Por favor ingrese el nombre el estudiante");
+                        break;
+                    case 2:
+                        Edit(path);
+                        break;
+                    case 3:
+                        Delete(path, data);
+                        break;
+                    case 4:
+                        return;
+                }
             }
         }
 
-        //Hay que abstraer la funcionalidad de elegir opcion en el menu para poder utilizarla en mas sitios.(Por ejemplo para elegir si queremos o no animaciones).
         static void CompleteMenu()
         {
             int selectedOption = Menu(completionMenuOptions);
@@ -170,6 +207,59 @@ namespace student_roulette
 
             return selectedOption;
         }
+
+        static bool DeleteConfirmMenu()
+        {
+            bool confirm = false;
+            ConsoleKeyInfo key;
+            int x, y;
+            string yes = "Si", no = "No";
+            Clear();
+            ResetColor();
+            WriteLine("¿Esta seguro que desea eliminar a este estudiante?");
+            SetCursorPosition(CursorLeft + 10, CursorTop + 1);
+            Write(yes);
+            SetCursorPosition(CursorLeft + 25, CursorTop);
+            BackgroundColor = ConsoleColor.White;
+            ForegroundColor = ConsoleColor.Black;
+            Write(no);
+
+            x = 38; // yes esta en la posición 11, y no esta en la posición 38
+            y = CursorTop; // 3
+
+            while ((key = ReadKey(true)).Key != ConsoleKey.Enter)
+            {
+                switch (key.Key)
+                {
+                    case ConsoleKey.RightArrow:
+                        if (CursorLeft == 39) continue;
+                        ResetColor();
+                        SetCursorPosition(10, CursorTop);
+                        Write(yes);
+                        SetCursorPosition(37, CursorTop);
+                        BackgroundColor = ConsoleColor.White;
+                        ForegroundColor = ConsoleColor.Black;
+                        Write(no);
+                        confirm = false;
+                        break;
+                    case ConsoleKey.LeftArrow:
+                        if (CursorLeft == 13) continue;
+                        ResetColor();
+                        SetCursorPosition(37, CursorTop);
+                        Write(no);
+                        SetCursorPosition(10, CursorTop);
+                        BackgroundColor = ConsoleColor.White;
+                        ForegroundColor = ConsoleColor.Black;
+                        Write(yes);
+                        confirm = true;
+                        break;
+                }
+            }
+
+            ResetColor();
+            return confirm;
+        }
+
         static string DrawMenu(string[] options, int optionResult)
         {
             string currentSelection = "";
@@ -227,7 +317,7 @@ namespace student_roulette
         {
             string first = CenterName(students[liveDeveloper], 23), second = CenterName(students[facilitator], 25);
             WriteLine("╔═══════════════════════╦═════════════════════════╗");
-            WriteLine("║ Desarrollador en vivo ║ Facilitador de ejecicio ║");
+            WriteLine($"║ {rols[0]} ║ {rols[1]} ║");
             WriteLine("╠═══════════════════════╬═════════════════════════╣");
             WriteLine($"║{first}║{second}║");
             Write("╚═══════════════════════╩═════════════════════════╝");
@@ -326,26 +416,8 @@ namespace student_roulette
             }
         }
 
-        static void InsertRol(string rol)
-        {
-            using (FileStream fs = new FileStream(rolPath, FileMode.Append))
-            using (StreamWriter writer = new StreamWriter(fs))
-            {
-                writer.WriteLine(rol);
-            }
-        }
-
-        static void GetRoles()
-        {
-            using (var fs = new FileStream(rolPath, FileMode.Open))
-            using (StreamReader sr = new StreamReader(fs))
-                while (!sr.EndOfStream)
-                {
-                    WriteLine(sr.ReadLine());
-                }
-        }
-
-        static List<string> GetListOfStudents(string path)
+        #region Operations functions
+        static List<string> GetList(string path)
         {
             List<string> result = new List<string>();
             using (var fs = new FileStream(path, FileMode.Open))
@@ -358,54 +430,111 @@ namespace student_roulette
             return result;
         }
 
-        static void AddStudent()
+        static void ShowAll(string path)
         {
-            //Clear();
-            //string student;
-            //CursorVisible = true;
-            //while (true)
-            //{
-            //    Write("Por favor ingrese el nombre completo del estudiante: ");
-            //    student = ReadLine()!;
-            //    if (!string.IsNullOrWhiteSpace(student)) break;
+            while (true)
+            {
+                using (var fs = new FileStream(path, FileMode.Open))
+                using (StreamReader sr = new StreamReader(fs))
+                    while (!sr.EndOfStream)
+                    {
+                        WriteLine($"{sr.ReadLine()}");
+                    }
 
 
-            //    WriteLine("No se debe dejar el nombre vacio o ingresar solamente espacios");
-            //    Write("Presione una tecla Para intentar otra vez...");
-            //    ReadKey(true);
-            //    Clear();
-            //}
+                WriteLine("\n\nPresione ESC para volver atras");
+                if (ReadKey(true).Key == ConsoleKey.Escape) return;
+                Clear();
+            }
+        }
 
-            string student = ValidateText("Por favor ingrese el nombre completo del estudiante");
+        static void Add(string path, string prompt)
+        {
+            string student = ValidateText(prompt);
 
-            using FileStream fs = new FileStream(studentsPath, FileMode.Append);
+            using FileStream fs = new FileStream(path, FileMode.Append);
             using StreamWriter writer = new StreamWriter(fs);
             writer.WriteLine(student.Trim());
         }
 
-        static void EditStudent()
+        static void Edit(string path)
         {
+            int student;
             string[] newStudents = students.ToArray();
             string editName = string.Empty;
+            ConsoleKeyInfo key;
 
             while (true)
             {
-                int student = Menu(newStudents);
+                student = Menu(newStudents);
+                editName = ValidateText($"Estudiante a Editar \"{students[student]}\"\nIngrese el nombre editado del estudiante");
 
-                WriteLine($"Estudiante a Editar \"{students[student]}\"");
-                editName = ValidateText("Ingrese el nombre editado del estudiante");
-                if (editName == string.Empty) return;
-                WriteLine("Presione Enter para confirmar, Esc para cancelar y volver a elegir estudiantes y Ctrl + R para salir al menu Estudiantes");
-                if (ReadKey(true).Key == ConsoleKey.Enter) break;
-                else if (ReadKey(true).Key == ConsoleKey.Escape) continue;
-                else if (ReadKey(true).Modifiers == ConsoleModifiers.Control && ReadKey(true).Key == ConsoleKey.R) return;
+                if (editName.Length == 0) continue;
+                while (true)
+                {
+                    WriteLine("Presione Enter para confirmar, Esc volver a elegir estudiantes y R para salir al menu Estudiantes...");
+                    key = ReadKey(true);
+                    if (key.Key == ConsoleKey.Enter || key.Key == ConsoleKey.Escape || key.Key == ConsoleKey.R) break;
+                    Clear();
+                }
+
+                if (key.Key == ConsoleKey.Enter) break;
+                else if (key.Key == ConsoleKey.Escape) continue;
+                else if (key.Key == ConsoleKey.R) return;
             }
 
+            students[student] = editName;
 
-            for (int i = 0; i < newStudents.Length; i++)
+            using FileStream fs = new FileStream(path, FileMode.Create);
+            using StreamWriter writer = new StreamWriter(fs);
             {
+                for (int i = 0; i < students.Count; i++)
+                {
+                    writer.WriteLine(students[i]);
+                }
+            }
+
+        }
+
+        static void Delete(string path, List<string> data)
+        {
+            string[] studentOptions = data.ToArray();
+            int optionSelected = Menu(studentOptions);
+            if (DeleteConfirmMenu())
+            {
+                using FileStream fs = new FileStream(path, FileMode.Create);
+                using StreamWriter writer = new StreamWriter(fs);
+                {
+                    for (int i = 0; i < data.Count; i++)
+                    {
+                        if (i == optionSelected) continue;
+                        writer.WriteLine(data[i]);
+                    }
+                }
             }
         }
+
+        static string[] GetDefaultRols(string path)
+        {
+            string[] result = new string[2];
+            int count = 0;
+
+            using (var fs = new FileStream(path, FileMode.Open))
+            using (StreamReader sr = new StreamReader(fs))
+                while (!sr.EndOfStream)
+                {
+                    string line = sr.ReadLine()!;
+                    if(line.Contains("default"))
+                    {
+                        result[count] = line;
+                        count++;
+                    }
+                }
+
+
+            return [];
+        }
+        #endregion
 
         static string ValidateText(string prompt)
         {
@@ -422,7 +551,7 @@ namespace student_roulette
                 WriteLine("No se debe dejar el nombre vacio o ingresar solamente espacios");
                 Write("Presione una tecla Para intentar otra vez, ESCAPE para salir...");
 
-                if ((ReadKey(true).Key) == ConsoleKey.Escape) break;
+                if ((ReadKey(true).Key) == ConsoleKey.Escape) return "";
                 Clear();
             }
 

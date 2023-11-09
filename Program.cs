@@ -1,5 +1,4 @@
-﻿using System.IO;
-using static System.Console;
+﻿using static System.Console;
 
 namespace student_roulette
 {
@@ -8,11 +7,17 @@ namespace student_roulette
     internal class Program
     {
         static string rolPath = AppDomain.CurrentDomain.BaseDirectory + "/rols.txt";
-        static string studentsPath = AppDomain.CurrentDomain.BaseDirectory + "/students.txt"; 
+        static string studentsPath = AppDomain.CurrentDomain.BaseDirectory + "/students.txt";
         static string historyPath = AppDomain.CurrentDomain.BaseDirectory + "/history.csv";
+        static string[] rolsSelected = { };
+        static List<string> students = GetList(studentsPath);
+        static List<string> rols = GetList(rolPath);
+        static List<int> repeatedNumbers = new();
+        static bool exit = false, withAnimation = true;
+        static int firstStudent, secondStudent;
         static string[] completionMenuOptions =
         {
-            "Reiniciar Ruleta", "Salir del Programa"
+            "Elegir nuevos estudiantes", "Cambiar Rol al primer estudiante", "Cambiar Rol al segundo estudiante", "Salir del Programa"
         };
 
         static string[] initialMenuOptions =
@@ -30,19 +35,13 @@ namespace student_roulette
             "Ver todos los Roles", "Ingresar nuevo Rol", "Modificar Rol", "Eliminar Rol", "Volver al menú"
         };
 
-        static List<string> students = GetList(studentsPath);
-        static List<string> rols = GetList(rolPath);
-        static List<int> repeatedNumbers = new();
-        static bool exit = false, withAnimation = true;
-        static int firstStudent, secondStudent;
-
         static void Main(string[] args)
         {
             CursorVisible = false;
             while (!exit)
             {
                 Clear();
-                InitialMenu();
+                GetStudents();
                 ReadKey(true);
                 //if (!Login()) continue;
             }
@@ -50,8 +49,10 @@ namespace student_roulette
 
         static void GetStudents()
         {
+            bool play = true, newStudent = true;
+
             Clear();
-            if (repeatedNumbers.Count == students.Count)
+            if (repeatedNumbers.Count + 1 == students.Count)
             {
                 WriteLine("Ya han participado todos los estudiantes reiniciando ruleta...");
                 //Write("Enter para continuar...");
@@ -64,17 +65,27 @@ namespace student_roulette
             Random randomStudent = new();
             //LoadingAnimation("\r\n  ▄████ ▓█████  ███▄    █ ▓█████  ██▀███   ▄▄▄       ███▄    █ ▓█████▄  ▒█████  \r\n ██▒ ▀█▒▓█   ▀  ██ ▀█   █ ▓█   ▀ ▓██ ▒ ██▒▒████▄     ██ ▀█   █ ▒██▀ ██▌▒██▒  ██▒\r\n▒██░▄▄▄░▒███   ▓██  ▀█ ██▒▒███   ▓██ ░▄█ ▒▒██  ▀█▄  ▓██  ▀█ ██▒░██   █▌▒██░  ██▒\r\n░▓█  ██▓▒▓█  ▄ ▓██▒  ▐▌██▒▒▓█  ▄ ▒██▀▀█▄  ░██▄▄▄▄██ ▓██▒  ▐▌██▒░▓█▄   ▌▒██   ██░\r\n░▒▓███▀▒░▒████▒▒██░   ▓██░░▒████▒░██▓ ▒██▒ ▓█   ▓██▒▒██░   ▓██░░▒████▓ ░ ████▓▒░\r\n ░▒   ▒ ░░ ▒░ ░░ ▒░   ▒ ▒ ░░ ▒░ ░░ ▒▓ ░▒▓░ ▒▒   ▓▒█░░ ▒░   ▒ ▒  ▒▒▓  ▒ ░ ▒░▒░▒░ \r\n  ░   ░  ░ ░  ░░ ░░   ░ ▒░ ░ ░  ░  ░▒ ░ ▒░  ▒   ▒▒ ░░ ░░   ░ ▒░ ░ ▒  ▒   ░ ▒ ▒░ \r\n░ ░   ░    ░      ░   ░ ░    ░     ░░   ░   ░   ▒      ░   ░ ░  ░ ░  ░ ░ ░ ░ ▒  \r\n      ░    ░  ░         ░    ░  ░   ░           ░  ░         ░    ░        ░ ░  \r\n                                                                ░               \r\n", withAnimation);
 
-            while (true)
+            while (play)
             {
-                firstStudent = randomStudent.Next(0, students.Count);
-                secondStudent = randomStudent.Next(0, students.Count);
-
-                if (firstStudent != secondStudent)
+                Clear();
+                while (newStudent)
                 {
-                    if (repeatedNumbers.Contains(firstStudent) || repeatedNumbers.Contains(secondStudent)) continue;
+                    firstStudent = randomStudent.Next(0, students.Count);
+                    secondStudent = randomStudent.Next(0, students.Count);
 
-                    break;
+                    if (firstStudent != secondStudent)
+                    {
+                        if (repeatedNumbers.Contains(firstStudent) || repeatedNumbers.Contains(secondStudent)) continue;
+
+                        break;
+                    }
                 }
+
+                if (rolsSelected.Length == 0)
+                    rolsSelected = GetOrChangeRols(rols);
+
+                //DrawResult(firstStudent, secondStudent, rolsSelected);
+                newStudent = CompleteMenu();
             }
 
             repeatedNumbers.Add(firstStudent);
@@ -86,7 +97,7 @@ namespace student_roulette
             while (true)
             {
                 Clear();
-                int selectedOption = Menu(initialMenuOptions);
+                int selectedOption = Menu(initialMenuOptions, "\r\n ▄▄▄▄    ██▓▓█████  ███▄    █ ██▒   █▓▓█████  ███▄    █  ██▓▓█████▄  ▒█████  \r\n▓█████▄ ▓██▒▓█   ▀  ██ ▀█   █▓██░   █▒▓█   ▀  ██ ▀█   █ ▓██▒▒██▀ ██▌▒██▒  ██▒\r\n▒██▒ ▄██▒██▒▒███   ▓██  ▀█ ██▒▓██  █▒░▒███   ▓██  ▀█ ██▒▒██▒░██   █▌▒██░  ██▒\r\n▒██░█▀  ░██░▒▓█  ▄ ▓██▒  ▐▌██▒ ▒██ █░░▒▓█  ▄ ▓██▒  ▐▌██▒░██░░▓█▄   ▌▒██   ██░\r\n░▓█  ▀█▓░██░░▒████▒▒██░   ▓██░  ▒▀█░  ░▒████▒▒██░   ▓██░░██░░▒████▓ ░ ████▓▒░\r\n░▒▓███▀▒░▓  ░░ ▒░ ░░ ▒░   ▒ ▒   ░ ▐░  ░░ ▒░ ░░ ▒░   ▒ ▒ ░▓   ▒▒▓  ▒ ░ ▒░▒░▒░ \r\n▒░▒   ░  ▒ ░ ░ ░  ░░ ░░   ░ ▒░  ░ ░░   ░ ░  ░░ ░░   ░ ▒░ ▒ ░ ░ ▒  ▒   ░ ▒ ▒░ \r\n ░    ░  ▒ ░   ░      ░   ░ ░     ░░     ░      ░   ░ ░  ▒ ░ ░ ░  ░ ░ ░ ░ ▒  \r\n ░       ░     ░  ░         ░      ░     ░  ░         ░  ░     ░        ░ ░  \r\n      ░                           ░                          ░               \r\n");
 
                 switch (selectedOption)
                 {
@@ -94,10 +105,10 @@ namespace student_roulette
                         GetStudents();
                         break;
                     case 1:
-                        OperationsMenu(studentsPath, studentsOptions, students);
+                        OperationsMenu(studentsPath, studentsOptions, students, "Estudiante");
                         break;
                     case 2:
-                        OperationsMenu(rolPath, rolsOptions, rols);
+                        OperationsMenu(rolPath, rolsOptions, rols, "Rol");
                         break;
                     case 3:
                         Environment.Exit(0);
@@ -105,12 +116,12 @@ namespace student_roulette
                 }
             }
         }
-        static void OperationsMenu(string path, string[] options, List<string> data)
+
+        static void OperationsMenu(string path, string[] options, List<string> data, string prompt)
         {
             while (true)
             {
-                data = GetList(path);
-                int selectedOption = Menu(options);
+                int selectedOption = Menu(options, "Elija la opcion deseada\n");
                 Clear();
 
                 switch (selectedOption)
@@ -119,73 +130,50 @@ namespace student_roulette
                         ShowAll(path);
                         break;
                     case 1:
-                        Add(path, "Por favor ingrese el nombre el estudiante");
+                        Add(path, prompt);
                         break;
                     case 2:
-                        Edit(path);
+                        Edit(path, prompt, data);
                         break;
                     case 3:
-                        Delete(path, data);
+                        Delete(path, data, prompt);
                         break;
                     case 4:
                         return;
                 }
+
+                data = GetList(path);
             }
         }
 
-        static void CompleteMenu()
+        static bool CompleteMenu()
         {
-            int selectedOption = Menu(completionMenuOptions);
+            int selectedOption = Menu(completionMenuOptions, "\n¿Que desea realizar?\n\n", true);
 
             switch (selectedOption)
             {
                 case 0:
-                    return;
+                    return true;
                 case 1:
-                    Environment.Exit(0);
+                    rolsSelected = GetOrChangeRols(rols, rolsSelected[0]);
+                    break;
+                case 2:
+                    rolsSelected = GetOrChangeRols(rols, rolsSelected[1]);
+                    break;
+                case 3:
+
                     break;
             }
 
-            //while (loop)
-            //{
-            //    while ((key = ReadKey(true)).Key != ConsoleKey.Enter)
-            //    {
-            //        switch (key.Key)
-            //        {
-            //            case ConsoleKey.DownArrow:
-            //            case ConsoleKey.S:
-            //                if (selectedOption == completionMenuOptions.Length - 1) continue;
-            //                selectedOption++;
-            //                break;
-            //            case ConsoleKey.UpArrow:
-            //            case ConsoleKey.W:
-            //                if (selectedOption == 0) continue;
-            //                selectedOption--;
-            //                break;
-            //        }
-
-            //        DrawMenu(completionMenuOptions, selectedOption);
-            //    }
-
-            //    loop = false;
-
-            //    switch (selectedOption)
-            //    {
-            //        case 0:
-            //            return;
-            //        case 1:
-            //            Environment.Exit(0);
-            //            break;
-            //    }
-            //}
+            return false;
         }
 
-        static int Menu(string[] options)
+        static int Menu(string[] options, string prompt, bool clear = false)
         {
             int selectedOption = 0;
             ConsoleKeyInfo key;
 
-            DrawMenu(options, selectedOption);
+            DrawMenu(options, prompt, selectedOption, clear);
             while ((key = ReadKey(true)).Key != ConsoleKey.Enter)
             {
                 switch (key.Key)
@@ -202,7 +190,7 @@ namespace student_roulette
                         break;
                 }
 
-                DrawMenu(options, selectedOption);
+                DrawMenu(options, prompt, selectedOption, clear);
             }
 
             return selectedOption;
@@ -260,13 +248,16 @@ namespace student_roulette
             return confirm;
         }
 
-        static string DrawMenu(string[] options, int optionResult)
+        static string DrawMenu(string[] options, string prompt, int optionResult, bool clear)
         {
             string currentSelection = "";
             int destacado = 0;
 
             Clear();
-            WriteLine("¿Desea continuar?\n");
+
+            if (clear) DrawResult(firstStudent, secondStudent, rolsSelected);
+
+            WriteLine(prompt);
 
             for (int i = 0; i < options.Length; i++)
             {
@@ -289,35 +280,14 @@ namespace student_roulette
                 destacado++;
             }
 
-            //Array.ForEach(options, element =>
-            //{
-            //    if (destacado == optionResult)
-            //    {
-            //        ForegroundColor = ConsoleColor.DarkBlue;
-            //        BackgroundColor = ConsoleColor.White;
-            //        WriteLine($"<< {element} >>");
-
-            //        ForegroundColor = ConsoleColor.White;
-            //        BackgroundColor = ConsoleColor.Black;
-            //        currentSelection = element;
-            //    }
-            //    else
-            //    {
-            //        Write(new string(' ', WindowWidth));
-            //        CursorLeft = 0;
-            //        WriteLine(element);
-            //    }
-            //    destacado++;
-            //});
-
             return currentSelection;
         }
 
-        static void DrawResult(int liveDeveloper, int facilitator)
+        static void DrawResult(int liveDeveloper, int facilitator, string[] rolsSelected)
         {
             string first = CenterName(students[liveDeveloper], 23), second = CenterName(students[facilitator], 25);
             WriteLine("╔═══════════════════════╦═════════════════════════╗");
-            WriteLine($"║ {rols[0]} ║ {rols[1]} ║");
+            WriteLine($"║ {rolsSelected[0]} ║ {rolsSelected[1]} ║");
             WriteLine("╠═══════════════════════╬═════════════════════════╣");
             WriteLine($"║{first}║{second}║");
             Write("╚═══════════════════════╩═════════════════════════╝");
@@ -346,6 +316,7 @@ namespace student_roulette
             return name;
         }
 
+        #region Login
         //Falta validar si el usuario deja el campo vacio y tambien que no se pase de la logitud permitida.
         static bool Login()
         {
@@ -388,6 +359,7 @@ namespace student_roulette
 
             return password;
         }
+        #endregion
 
         static void LoadingAnimation(string prompt, bool withAnimation)
         {
@@ -450,29 +422,29 @@ namespace student_roulette
 
         static void Add(string path, string prompt)
         {
-            string student = ValidateText(prompt);
+            string data = ValidateText($"Por favor ingrese el nuevo {prompt}");
 
             using FileStream fs = new FileStream(path, FileMode.Append);
             using StreamWriter writer = new StreamWriter(fs);
-            writer.WriteLine(student.Trim());
+            writer.WriteLine(data.Trim());
         }
 
-        static void Edit(string path)
+        static void Edit(string path, string prompt, List<string> data)
         {
-            int student;
-            string[] newStudents = students.ToArray();
+            int selected;
+            string[] newData = data.ToArray();
             string editName = string.Empty;
             ConsoleKeyInfo key;
 
             while (true)
             {
-                student = Menu(newStudents);
-                editName = ValidateText($"Estudiante a Editar \"{students[student]}\"\nIngrese el nombre editado del estudiante");
+                selected = Menu(newData, $"Elija el {prompt} que desea eliminar\n\n");
+                editName = ValidateText($"{prompt} a Editar \"{newData[selected]}\"\nIngrese el nombre editado del {prompt}");
 
                 if (editName.Length == 0) continue;
                 while (true)
                 {
-                    WriteLine("Presione Enter para confirmar, Esc volver a elegir estudiantes y R para salir al menu Estudiantes...");
+                    WriteLine($"Presione Enter para confirmar, Esc volver a elegir un {prompt} y R para salir al menu Estudiantes...");
                     key = ReadKey(true);
                     if (key.Key == ConsoleKey.Enter || key.Key == ConsoleKey.Escape || key.Key == ConsoleKey.R) break;
                     Clear();
@@ -483,23 +455,23 @@ namespace student_roulette
                 else if (key.Key == ConsoleKey.R) return;
             }
 
-            students[student] = editName;
+            data[selected] = editName;
 
             using FileStream fs = new FileStream(path, FileMode.Create);
             using StreamWriter writer = new StreamWriter(fs);
             {
-                for (int i = 0; i < students.Count; i++)
+                for (int i = 0; i < data.Count; i++)
                 {
-                    writer.WriteLine(students[i]);
+                    writer.WriteLine(data[i]);
                 }
             }
 
         }
 
-        static void Delete(string path, List<string> data)
+        static void Delete(string path, List<string> data, string prompt)
         {
-            string[] studentOptions = data.ToArray();
-            int optionSelected = Menu(studentOptions);
+            string[] options = data.ToArray();
+            int optionSelected = Menu(options, $"Elija el {prompt} que desea eliminar\n");
             if (DeleteConfirmMenu())
             {
                 using FileStream fs = new FileStream(path, FileMode.Create);
@@ -514,25 +486,61 @@ namespace student_roulette
             }
         }
 
-        static string[] GetDefaultRols(string path)
+        static string[] GetOrChangeRols(List<string> rols, string rolToChange = "")
         {
             string[] result = new string[2];
             int count = 0;
 
-            using (var fs = new FileStream(path, FileMode.Open))
-            using (StreamReader sr = new StreamReader(fs))
-                while (!sr.EndOfStream)
+            if (rolToChange == "")
+            {
+                for (int i = 0; i < rols.Count; i++)
                 {
-                    string line = sr.ReadLine()!;
-                    if(line.Contains("default"))
+                    if (rols[i].Contains("(default)"))
                     {
-                        result[count] = line;
+                        result[count] = rols[i].Remove(rols[i].IndexOf(" (")).Trim();
                         count++;
                     }
                 }
+            }
+            else
+            {
+                result = rolsSelected;
+                int change = Menu(rols.ToArray(), $"\n\nElija el Nuevo rol del estudiante (antiguo rol: {rolToChange}\n", true);
 
+                //Se debe resolver el asunto de que aqui siempre devolvera -1 porque los roles guardados en result no tienen los caracteres "(defaul) por ende la comparacion siempre devolvera -1"
+                int exist = Array.IndexOf(result, rols[change]);
 
-            return [];
+                if (exist == -1)
+                {
+                    for(int i = 0; i < result.Length; i++)
+                    {
+                        if (result[i] == rolToChange) result[i] = rols[change].Remove(rols[change].IndexOf(" (")).Trim();
+                    }
+                }
+                else
+                {
+                    Clear();
+                    Write("Ambos estudiantes no pueden tener el mismo rol...");
+                    Thread.Sleep(1000);
+                    Clear();
+                }
+
+                //for (int i = 0; i < result.Length; i++)
+                //{
+                //    //if (result[i].Contains(rolToChange) && !(result[1].Contains(rolToChange)))
+                //    if ((Array.IndexOf(result, rols[change]) == -1))
+                //    {
+                //        //result[i] = rols[change];
+                //        result[i] = rols[change].Contains("(default)") ? rols[change].Remove(rols[change].IndexOf(" (")).Trim() : rols[change];
+                //    }
+                //    else
+                //    {
+                        
+                //    }
+                //}
+            }
+
+            return result;
         }
         #endregion
 

@@ -1,5 +1,2 @@
 Desarrollador en vivo (default)
 Facilitador del Ejercicio (default)
-Observador de ejercicio
-Vengador Fantasma
-El que se la sabe todas

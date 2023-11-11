@@ -1,28 +1,27 @@
-﻿using static System.Console;
+﻿using System.IO;
+using static System.Console;
 
 namespace student_roulette
 {
-    //Agregar un cronometro que pueda ser elegido, por ejemplo podemos preguntar iniciando el programa si deseamos usar solamente el cronometro, tambien despues de haber elegido los estudiantes preguntar si se quiere ahi mismo cronometrar el desafio.
-    // Agregar un reloj, para ver la hora actual en el programa, que se pueda elegir si mostrar o no.
     internal class Program
     {
         static string rolPath = AppDomain.CurrentDomain.BaseDirectory + "/rols.txt";
         static string studentsPath = AppDomain.CurrentDomain.BaseDirectory + "/students.txt";
         static string historyPath = AppDomain.CurrentDomain.BaseDirectory + "/history.csv";
-        static string[] rolsSelected = { };
+        static string[] rolsSelected = Array.Empty<string>();
         static List<string> students = GetList(studentsPath);
         static List<string> rols = GetList(rolPath);
         static List<int> repeatedNumbers = new();
-        static bool exit = false, withAnimation = true;
-        static int firstStudent, secondStudent;
+        static bool drawLast = true, withAnimation = false;
+        static int firstStudent, secondStudent, centerPosition;
         static string[] completionMenuOptions =
         {
-            "Elegir nuevos estudiantes", "Cambiar Rol al primer estudiante", "Cambiar Rol al segundo estudiante", "Salir del Programa"
+            "Elegir nuevos estudiantes", "Cronometro", "Cambiar Rol al primer estudiante", "Cambiar Rol al segundo estudiante", "Volver al menu principal"
         };
 
         static string[] initialMenuOptions =
         {
-            "Iniciar Programa (Elegir Estudiantes)", "Estudiantes", "Roles", "Salir del Programa"
+            "Iniciar Programa (Elegir Estudiantes) Sin animacion","Iniciar Programa (Elegir Estudiantes) Con animacion", "Estudiantes", "Roles", "Salir del Programa"
         };
 
         static string[] studentsOptions =
@@ -38,37 +37,27 @@ namespace student_roulette
         static void Main(string[] args)
         {
             CursorVisible = false;
-            while (!exit)
-            {
-                Clear();
-                GetStudents();
-                ReadKey(true);
-                //if (!Login()) continue;
-            }
+
+            Clear();
+            InitialMenu();
+            //if (!Login()) continue;
+
         }
 
         static void GetStudents()
         {
-            bool play = true, newStudent = true;
+            int newStudent = 1;
+            Random randomStudent = new();
 
             Clear();
-            if (repeatedNumbers.Count + 1 == students.Count)
-            {
-                WriteLine("Ya han participado todos los estudiantes reiniciando ruleta...");
-                //Write("Enter para continuar...");
-                repeatedNumbers.Clear();
-                CompleteMenu();
-                //LoadingAnimation("\r\n ██▀███  ▓█████  ██▓ ███▄    █  ██▓ ▄████▄   ██▓ ▄▄▄       ███▄    █ ▓█████▄  ▒█████  \r\n▓██ ▒ ██▒▓█   ▀ ▓██▒ ██ ▀█   █ ▓██▒▒██▀ ▀█  ▓██▒▒████▄     ██ ▀█   █ ▒██▀ ██▌▒██▒  ██▒\r\n▓██ ░▄█ ▒▒███   ▒██▒▓██  ▀█ ██▒▒██▒▒▓█    ▄ ▒██▒▒██  ▀█▄  ▓██  ▀█ ██▒░██   █▌▒██░  ██▒\r\n▒██▀▀█▄  ▒▓█  ▄ ░██░▓██▒  ▐▌██▒░██░▒▓▓▄ ▄██▒░██░░██▄▄▄▄██ ▓██▒  ▐▌██▒░▓█▄   ▌▒██   ██░\r\n░██▓ ▒██▒░▒████▒░██░▒██░   ▓██░░██░▒ ▓███▀ ░░██░ ▓█   ▓██▒▒██░   ▓██░░▒████▓ ░ ████▓▒░\r\n░ ▒▓ ░▒▓░░░ ▒░ ░░▓  ░ ▒░   ▒ ▒ ░▓  ░ ░▒ ▒  ░░▓   ▒▒   ▓▒█░░ ▒░   ▒ ▒  ▒▒▓  ▒ ░ ▒░▒░▒░ \r\n  ░▒ ░ ▒░ ░ ░  ░ ▒ ░░ ░░   ░ ▒░ ▒ ░  ░  ▒    ▒ ░  ▒   ▒▒ ░░ ░░   ░ ▒░ ░ ▒  ▒   ░ ▒ ▒░ \r\n  ░░   ░    ░    ▒ ░   ░   ░ ░  ▒ ░░         ▒ ░  ░   ▒      ░   ░ ░  ░ ░  ░ ░ ░ ░ ▒  \r\n   ░        ░  ░ ░           ░  ░  ░ ░       ░        ░  ░         ░    ░        ░ ░  \r\n                                   ░                                  ░               \r\n", withAnimation);
-                Clear();
-            }
 
-            Random randomStudent = new();
-            //LoadingAnimation("\r\n  ▄████ ▓█████  ███▄    █ ▓█████  ██▀███   ▄▄▄       ███▄    █ ▓█████▄  ▒█████  \r\n ██▒ ▀█▒▓█   ▀  ██ ▀█   █ ▓█   ▀ ▓██ ▒ ██▒▒████▄     ██ ▀█   █ ▒██▀ ██▌▒██▒  ██▒\r\n▒██░▄▄▄░▒███   ▓██  ▀█ ██▒▒███   ▓██ ░▄█ ▒▒██  ▀█▄  ▓██  ▀█ ██▒░██   █▌▒██░  ██▒\r\n░▓█  ██▓▒▓█  ▄ ▓██▒  ▐▌██▒▒▓█  ▄ ▒██▀▀█▄  ░██▄▄▄▄██ ▓██▒  ▐▌██▒░▓█▄   ▌▒██   ██░\r\n░▒▓███▀▒░▒████▒▒██░   ▓██░░▒████▒░██▓ ▒██▒ ▓█   ▓██▒▒██░   ▓██░░▒████▓ ░ ████▓▒░\r\n ░▒   ▒ ░░ ▒░ ░░ ▒░   ▒ ▒ ░░ ▒░ ░░ ▒▓ ░▒▓░ ▒▒   ▓▒█░░ ▒░   ▒ ▒  ▒▒▓  ▒ ░ ▒░▒░▒░ \r\n  ░   ░  ░ ░  ░░ ░░   ░ ▒░ ░ ░  ░  ░▒ ░ ▒░  ▒   ▒▒ ░░ ░░   ░ ▒░ ░ ▒  ▒   ░ ▒ ▒░ \r\n░ ░   ░    ░      ░   ░ ░    ░     ░░   ░   ░   ▒      ░   ░ ░  ░ ░  ░ ░ ░ ░ ▒  \r\n      ░    ░  ░         ░    ░  ░   ░           ░  ░         ░    ░        ░ ░  \r\n                                                                ░               \r\n", withAnimation);
-
-            while (play)
+            while (newStudent != 3)
             {
                 Clear();
-                while (newStudent)
+
+                LoadingAnimation("\r\n         ▓█████  ██▓     ██▓  ▄████  ██▓▓█████  ███▄    █ ▓█████▄  ▒█████                   \r\n         ▓█   ▀ ▓██▒    ▓██▒ ██▒ ▀█▒▓██▒▓█   ▀  ██ ▀█   █ ▒██▀ ██▌▒██▒  ██▒                 \r\n         ▒███   ▒██░    ▒██▒▒██░▄▄▄░▒██▒▒███   ▓██  ▀█ ██▒░██   █▌▒██░  ██▒                 \r\n         ▒▓█  ▄ ▒██░    ░██░░▓█  ██▓░██░▒▓█  ▄ ▓██▒  ▐▌██▒░▓█▄   ▌▒██   ██░                 \r\n         ░▒████▒░██████▒░██░░▒▓███▀▒░██░░▒████▒▒██░   ▓██░░▒████▓ ░ ████▓▒░                 \r\n         ░░ ▒░ ░░ ▒░▓  ░░▓   ░▒   ▒ ░▓  ░░ ▒░ ░░ ▒░   ▒ ▒  ▒▒▓  ▒ ░ ▒░▒░▒░                  \r\n          ░ ░  ░░ ░ ▒  ░ ▒ ░  ░   ░  ▒ ░ ░ ░  ░░ ░░   ░ ▒░ ░ ▒  ▒   ░ ▒ ▒░                  \r\n            ░     ░ ░    ▒ ░░ ░   ░  ▒ ░   ░      ░   ░ ░  ░ ░  ░ ░ ░ ░ ▒                   \r\n            ░  ░    ░  ░ ░        ░  ░     ░  ░         ░    ░        ░ ░                   \r\n                                                           ░                                \r\n▓█████   ██████ ▄▄▄█████▓ █    ██ ▓█████▄  ██▓ ▄▄▄       ███▄    █ ▄▄▄█████▓▓█████   ██████ \r\n▓█   ▀ ▒██    ▒ ▓  ██▒ ▓▒ ██  ▓██▒▒██▀ ██▌▓██▒▒████▄     ██ ▀█   █ ▓  ██▒ ▓▒▓█   ▀ ▒██    ▒ \r\n▒███   ░ ▓██▄   ▒ ▓██░ ▒░▓██  ▒██░░██   █▌▒██▒▒██  ▀█▄  ▓██  ▀█ ██▒▒ ▓██░ ▒░▒███   ░ ▓██▄   \r\n▒▓█  ▄   ▒   ██▒░ ▓██▓ ░ ▓▓█  ░██░░▓█▄   ▌░██░░██▄▄▄▄██ ▓██▒  ▐▌██▒░ ▓██▓ ░ ▒▓█  ▄   ▒   ██▒\r\n░▒████▒▒██████▒▒  ▒██▒ ░ ▒▒█████▓ ░▒████▓ ░██░ ▓█   ▓██▒▒██░   ▓██░  ▒██▒ ░ ░▒████▒▒██████▒▒\r\n░░ ▒░ ░▒ ▒▓▒ ▒ ░  ▒ ░░   ░▒▓▒ ▒ ▒  ▒▒▓  ▒ ░▓   ▒▒   ▓▒█░░ ▒░   ▒ ▒   ▒ ░░   ░░ ▒░ ░▒ ▒▓▒ ▒ ░\r\n ░ ░  ░░ ░▒  ░ ░    ░    ░░▒░ ░ ░  ░ ▒  ▒  ▒ ░  ▒   ▒▒ ░░ ░░   ░ ▒░    ░     ░ ░  ░░ ░▒  ░ ░\r\n   ░   ░  ░  ░    ░       ░░░ ░ ░  ░ ░  ░  ▒ ░  ░   ▒      ░   ░ ░   ░         ░   ░  ░  ░  \r\n   ░  ░      ░              ░        ░     ░        ░  ░         ░             ░  ░      ░  \r\n                                   ░                                                        \r\n", withAnimation);
+
+                while (newStudent == 1)
                 {
                     firstStudent = randomStudent.Next(0, students.Count);
                     secondStudent = randomStudent.Next(0, students.Count);
@@ -84,12 +73,28 @@ namespace student_roulette
                 if (rolsSelected.Length == 0)
                     rolsSelected = GetOrChangeRols(rols);
 
-                //DrawResult(firstStudent, secondStudent, rolsSelected);
+                DrawResult(students[firstStudent], students[secondStudent], rolsSelected[0], rolsSelected[1]/*rolsSelected*/);
                 newStudent = CompleteMenu();
-            }
 
-            repeatedNumbers.Add(firstStudent);
-            repeatedNumbers.Add(secondStudent);
+                if (newStudent == 1 || newStudent == 3)
+                {
+                    Log(firstStudent, secondStudent, rolsSelected, historyPath);
+                    repeatedNumbers.Add(firstStudent);
+                    repeatedNumbers.Add(secondStudent);
+                }
+
+                if (repeatedNumbers.Count + 1 == students.Count)
+                {
+                    if (!withAnimation)
+                    {
+                        WriteLine("Ya han participado todos los estudiantes volviendo al menu...");
+                        Thread.Sleep(1000);
+                    }
+                    repeatedNumbers.Clear();
+                    LoadingAnimation("\r\n ██▀███  ▓█████  ██▓ ███▄    █  ██▓ ▄████▄   ██▓ ▄▄▄       ███▄    █ ▓█████▄  ▒█████  \r\n▓██ ▒ ██▒▓█   ▀ ▓██▒ ██ ▀█   █ ▓██▒▒██▀ ▀█  ▓██▒▒████▄     ██ ▀█   █ ▒██▀ ██▌▒██▒  ██▒\r\n▓██ ░▄█ ▒▒███   ▒██▒▓██  ▀█ ██▒▒██▒▒▓█    ▄ ▒██▒▒██  ▀█▄  ▓██  ▀█ ██▒░██   █▌▒██░  ██▒\r\n▒██▀▀█▄  ▒▓█  ▄ ░██░▓██▒  ▐▌██▒░██░▒▓▓▄ ▄██▒░██░░██▄▄▄▄██ ▓██▒  ▐▌██▒░▓█▄   ▌▒██   ██░\r\n░██▓ ▒██▒░▒████▒░██░▒██░   ▓██░░██░▒ ▓███▀ ░░██░ ▓█   ▓██▒▒██░   ▓██░░▒████▓ ░ ████▓▒░\r\n░ ▒▓ ░▒▓░░░ ▒░ ░░▓  ░ ▒░   ▒ ▒ ░▓  ░ ░▒ ▒  ░░▓   ▒▒   ▓▒█░░ ▒░   ▒ ▒  ▒▒▓  ▒ ░ ▒░▒░▒░ \r\n  ░▒ ░ ▒░ ░ ░  ░ ▒ ░░ ░░   ░ ▒░ ▒ ░  ░  ▒    ▒ ░  ▒   ▒▒ ░░ ░░   ░ ▒░ ░ ▒  ▒   ░ ▒ ▒░ \r\n  ░░   ░    ░    ▒ ░   ░   ░ ░  ▒ ░░         ▒ ░  ░   ▒      ░   ░ ░  ░ ░  ░ ░ ░ ░ ▒  \r\n   ░        ░  ░ ░           ░  ░  ░ ░       ░        ░  ░         ░    ░        ░ ░  \r\n                                   ░                                  ░               \r\n", withAnimation);
+                    break;
+                }
+            }
         }
 
         static void InitialMenu()
@@ -97,7 +102,10 @@ namespace student_roulette
             while (true)
             {
                 Clear();
+
                 int selectedOption = Menu(initialMenuOptions, "\r\n ▄▄▄▄    ██▓▓█████  ███▄    █ ██▒   █▓▓█████  ███▄    █  ██▓▓█████▄  ▒█████  \r\n▓█████▄ ▓██▒▓█   ▀  ██ ▀█   █▓██░   █▒▓█   ▀  ██ ▀█   █ ▓██▒▒██▀ ██▌▒██▒  ██▒\r\n▒██▒ ▄██▒██▒▒███   ▓██  ▀█ ██▒▓██  █▒░▒███   ▓██  ▀█ ██▒▒██▒░██   █▌▒██░  ██▒\r\n▒██░█▀  ░██░▒▓█  ▄ ▓██▒  ▐▌██▒ ▒██ █░░▒▓█  ▄ ▓██▒  ▐▌██▒░██░░▓█▄   ▌▒██   ██░\r\n░▓█  ▀█▓░██░░▒████▒▒██░   ▓██░  ▒▀█░  ░▒████▒▒██░   ▓██░░██░░▒████▓ ░ ████▓▒░\r\n░▒▓███▀▒░▓  ░░ ▒░ ░░ ▒░   ▒ ▒   ░ ▐░  ░░ ▒░ ░░ ▒░   ▒ ▒ ░▓   ▒▒▓  ▒ ░ ▒░▒░▒░ \r\n▒░▒   ░  ▒ ░ ░ ░  ░░ ░░   ░ ▒░  ░ ░░   ░ ░  ░░ ░░   ░ ▒░ ▒ ░ ░ ▒  ▒   ░ ▒ ▒░ \r\n ░    ░  ▒ ░   ░      ░   ░ ░     ░░     ░      ░   ░ ░  ▒ ░ ░ ░  ░ ░ ░ ░ ▒  \r\n ░       ░     ░  ░         ░      ░     ░  ░         ░  ░     ░        ░ ░  \r\n      ░                           ░                          ░               \r\n");
+
+                drawLast = false;
 
                 switch (selectedOption)
                 {
@@ -105,15 +113,21 @@ namespace student_roulette
                         GetStudents();
                         break;
                     case 1:
-                        OperationsMenu(studentsPath, studentsOptions, students, "Estudiante");
+                        withAnimation = true;
+                        GetStudents();
                         break;
                     case 2:
-                        OperationsMenu(rolPath, rolsOptions, rols, "Rol");
+                        OperationsMenu(studentsPath, studentsOptions, students, "Estudiante");
                         break;
                     case 3:
+                        OperationsMenu(rolPath, rolsOptions, rols, "Rol");
+                        break;
+                    case 4:
                         Environment.Exit(0);
                         break;
                 }
+                drawLast = true;
+                withAnimation = false;
             }
         }
 
@@ -121,7 +135,7 @@ namespace student_roulette
         {
             while (true)
             {
-                int selectedOption = Menu(options, "Elija la opcion deseada\n");
+                int selectedOption = Menu(options, "\t\t\tElija la opcion deseada\n");
                 Clear();
 
                 switch (selectedOption)
@@ -146,26 +160,29 @@ namespace student_roulette
             }
         }
 
-        static bool CompleteMenu()
+        static int CompleteMenu()
         {
-            int selectedOption = Menu(completionMenuOptions, "\n¿Que desea realizar?\n\n", true);
-
-            switch (selectedOption)
+            while (true)
             {
-                case 0:
-                    return true;
-                case 1:
-                    rolsSelected = GetOrChangeRols(rols, rolsSelected[0]);
-                    break;
-                case 2:
-                    rolsSelected = GetOrChangeRols(rols, rolsSelected[1]);
-                    break;
-                case 3:
+                int selectedOption = Menu(completionMenuOptions, "\n¿Que desea realizar?\n\n", true);
 
-                    break;
+                switch (selectedOption)
+                {
+                    case 0:
+                        return 1;
+                    case 1:
+                        StopWatch();
+                        break;
+                    case 2:
+                        rolsSelected = GetOrChangeRols(rols, rolsSelected[0]);
+                        break;
+                    case 3:
+                        rolsSelected = GetOrChangeRols(rols, rolsSelected[1]);
+                        break;
+                    case 4:
+                        return 3;
+                }
             }
-
-            return false;
         }
 
         static int Menu(string[] options, string prompt, bool clear = false)
@@ -196,24 +213,20 @@ namespace student_roulette
             return selectedOption;
         }
 
-        static bool DeleteConfirmMenu()
+        static bool DeleteConfirmMenu(string prompt)
         {
             bool confirm = false;
             ConsoleKeyInfo key;
-            int x, y;
             string yes = "Si", no = "No";
             Clear();
             ResetColor();
-            WriteLine("¿Esta seguro que desea eliminar a este estudiante?");
+            WriteLine($"¿Esta seguro que desea eliminar a este {prompt}?");
             SetCursorPosition(CursorLeft + 10, CursorTop + 1);
             Write(yes);
             SetCursorPosition(CursorLeft + 25, CursorTop);
             BackgroundColor = ConsoleColor.White;
             ForegroundColor = ConsoleColor.Black;
             Write(no);
-
-            x = 38; // yes esta en la posición 11, y no esta en la posición 38
-            y = CursorTop; // 3
 
             while ((key = ReadKey(true)).Key != ConsoleKey.Enter)
             {
@@ -252,10 +265,18 @@ namespace student_roulette
         {
             string currentSelection = "";
             int destacado = 0;
+            string[] Last = GetLastStudents(historyPath);
 
             Clear();
 
-            if (clear) DrawResult(firstStudent, secondStudent, rolsSelected);
+            if (clear) DrawResult(students[firstStudent], students[secondStudent], rolsSelected[0], rolsSelected[1]);
+
+            if (drawLast && !Last.Contains<string>("Primer Estudiante"))
+            {
+                prompt = "";
+                WriteLine("Ultimos Participantes\n");
+                DrawResult(Last[0], Last[1], Last[2], Last[3]);
+            }
 
             WriteLine(prompt);
 
@@ -263,7 +284,7 @@ namespace student_roulette
             {
                 if (destacado == optionResult)
                 {
-                    ForegroundColor = ConsoleColor.DarkBlue;
+                    ForegroundColor = ConsoleColor.Black;
                     BackgroundColor = ConsoleColor.White;
                     WriteLine($"<< {options[i]} >>");
 
@@ -283,18 +304,64 @@ namespace student_roulette
             return currentSelection;
         }
 
-        static void DrawResult(int liveDeveloper, int facilitator, string[] rolsSelected)
+        static void DrawResult(string liveDeveloper, string facilitator, string rolLiveDeveloper, string rolFacilitator)
         {
-            string first = CenterName(students[liveDeveloper], 23), second = CenterName(students[facilitator], 25);
-            WriteLine("╔═══════════════════════╦═════════════════════════╗");
-            WriteLine($"║ {rolsSelected[0]} ║ {rolsSelected[1]} ║");
-            WriteLine("╠═══════════════════════╬═════════════════════════╣");
+            //Aqui basicamente lo que hago es verificar si el nombre del estudiante ocupara mas en el recuadro que el rol que el tenga, es decir, si la cantidad de caracteres del nombre es mayor yo debo dibujar un recuadro de acuerdo al tamaño del nombre, si de lo contario la cantidad de caracteres del rol es mas grande entonces debo dibujar el recuadro de acuerdo a ese tamaño.
+            //int firstBox = students[liveDeveloper].Length > rolsSelected[rolLiveDeveloper].Length ? students[liveDeveloper].Length : rolsSelected[rolLiveDeveloper].Length;
+            //int secondBox = students[facilitator].Length > rolsSelected[rolFacilitator].Length ? students[facilitator].Length : rolsSelected[rolFacilitator].Length;
+            int firstBox = liveDeveloper.Length > rolLiveDeveloper.Length ? liveDeveloper.Length : rolLiveDeveloper.Length;
+            int secondBox = facilitator.Length > rolFacilitator.Length ? facilitator.Length : rolFacilitator.Length;
+
+            //centerPosition = (WindowWidth / 2) - (firstBox + secondBox) / 2;
+
+            //Se le suma 2 para que siempre tenga al menos 1 espacio en cada lado, porque en ocaciones el rol y el nombre tienen la misma cantidad de caracteres.
+            string firstRol = CenterString(rolLiveDeveloper, firstBox + 2), secondRol = CenterString(rolFacilitator, secondBox + 2);
+            string first = CenterString(liveDeveloper, firstBox + 2), second = CenterString(facilitator, secondBox + 2);
+
+            //SetCursorPosition(centerPosition, 2);
+            Write("╔");
+            for (int i = 0; i < firstBox + 2; i++)
+            {
+                Write("═");
+            }
+            Write("╦");
+            for (int i = 0; i < secondBox + 2; i++)
+            {
+                Write("═");
+            }
+            WriteLine("╗");
+            //SetCursorPosition(centerPosition, CursorTop);
+            WriteLine($"║{firstRol}║{secondRol}║");
+            //SetCursorPosition(centerPosition, CursorTop);
+            Write("╠");
+            for (int i = 0; i < firstBox + 2; i++)
+            {
+                Write("═");
+            }
+            Write("╬");
+            for (int i = 0; i < secondBox + 2; i++)
+            {
+                Write("═");
+            }
+            WriteLine("╣");
+            //SetCursorPosition(centerPosition, CursorTop);
             WriteLine($"║{first}║{second}║");
-            Write("╚═══════════════════════╩═════════════════════════╝");
+            //SetCursorPosition(centerPosition, CursorTop);
+            Write("╚");
+            for (int i = 0; i < firstBox + 2; i++)
+            {
+                Write("═");
+            }
+            Write("╩");
+            for (int i = 0; i < secondBox + 2; i++)
+            {
+                Write("═");
+            }
+            WriteLine("╝");
         }
 
-        //Esta funcion lo que hace es centrar el nombre en el recuadro hecho añadiendo los espacios necesarios para que quede bien centrado.
-        static string CenterName(string name, int space)
+        //Esta funcion lo que hace es centrar el texto en el recuadro añadiendo los espacios necesarios para que quede bien centrado.
+        static string CenterString(string name, int space)
         {
             int whiteSpaces = space - name.Length, nameLenght = name.Length;
             string spaces = "";
@@ -316,51 +383,6 @@ namespace student_roulette
             return name;
         }
 
-        #region Login
-        //Falta validar si el usuario deja el campo vacio y tambien que no se pase de la logitud permitida.
-        static bool Login()
-        {
-            string userName = string.Empty, password = string.Empty;
-            LoadingAnimation("\r\n ▄▄▄▄    ██▓▓█████  ███▄    █ ██▒   █▓▓█████  ███▄    █  ██▓▓█████▄  ▒█████  \r\n▓█████▄ ▓██▒▓█   ▀  ██ ▀█   █▓██░   █▒▓█   ▀  ██ ▀█   █ ▓██▒▒██▀ ██▌▒██▒  ██▒\r\n▒██▒ ▄██▒██▒▒███   ▓██  ▀█ ██▒▓██  █▒░▒███   ▓██  ▀█ ██▒▒██▒░██   █▌▒██░  ██▒\r\n▒██░█▀  ░██░▒▓█  ▄ ▓██▒  ▐▌██▒ ▒██ █░░▒▓█  ▄ ▓██▒  ▐▌██▒░██░░▓█▄   ▌▒██   ██░\r\n░▓█  ▀█▓░██░░▒████▒▒██░   ▓██░  ▒▀█░  ░▒████▒▒██░   ▓██░░██░░▒████▓ ░ ████▓▒░\r\n░▒▓███▀▒░▓  ░░ ▒░ ░░ ▒░   ▒ ▒   ░ ▐░  ░░ ▒░ ░░ ▒░   ▒ ▒ ░▓   ▒▒▓  ▒ ░ ▒░▒░▒░ \r\n▒░▒   ░  ▒ ░ ░ ░  ░░ ░░   ░ ▒░  ░ ░░   ░ ░  ░░ ░░   ░ ▒░ ▒ ░ ░ ▒  ▒   ░ ▒ ▒░ \r\n ░    ░  ▒ ░   ░      ░   ░ ░     ░░     ░      ░   ░ ░  ▒ ░ ░ ░  ░ ░ ░ ░ ▒  \r\n ░       ░     ░  ░         ░      ░     ░  ░         ░  ░     ░        ░ ░  \r\n      ░                           ░                          ░               \r\n", withAnimation);
-
-            CursorVisible = true;
-            DrawLogin();
-            CursorTop = 1;
-            CursorLeft = 13;
-            userName = ReadLine()!.ToLower();
-
-            CursorTop = 3;
-            CursorLeft = 13;
-            password = HidePassword();
-            CursorVisible = true;
-            return userName == "ov3rst" && password == "123456";
-        }
-
-        static void DrawLogin()
-        {
-            WriteLine("╔══════════╦══════════╗");
-            WriteLine("║  Login   ║          ║");
-            WriteLine("╠══════════╬══════════╣");
-            WriteLine("║ Password ║          ║");
-            Write("╚══════════╩══════════╝");
-        }
-
-        static string HidePassword()
-        {
-            string password = string.Empty;
-            while (true)
-            {
-                var key = ReadKey(true);
-                if (key.Key == ConsoleKey.Enter) break;
-
-                password += Convert.ToString(key.KeyChar);
-                Write("*");
-            }
-
-            return password;
-        }
-        #endregion
-
         static void LoadingAnimation(string prompt, bool withAnimation)
         {
             const byte time = 50;
@@ -368,14 +390,14 @@ namespace student_roulette
             if (withAnimation)
             {
                 Write(prompt);
-                SetCursorPosition(10, 15);
+                SetCursorPosition(10, 22);
                 ForegroundColor = ConsoleColor.White;
                 for (int i = 0; i < time; i++)
                 {
                     Write("█");
                 }
 
-                SetCursorPosition(10, 15);
+                SetCursorPosition(10, 22);
                 ForegroundColor = ConsoleColor.Green;
                 for (int i = 0; i < time; i++)
                 {
@@ -444,7 +466,7 @@ namespace student_roulette
                 if (editName.Length == 0) continue;
                 while (true)
                 {
-                    WriteLine($"Presione Enter para confirmar, Esc volver a elegir un {prompt} y R para salir al menu Estudiantes...");
+                    WriteLine($"\n\nPresione Enter para confirmar, Esc volver a elegir un {prompt} y R para salir al menu...");
                     key = ReadKey(true);
                     if (key.Key == ConsoleKey.Enter || key.Key == ConsoleKey.Escape || key.Key == ConsoleKey.R) break;
                     Clear();
@@ -472,7 +494,7 @@ namespace student_roulette
         {
             string[] options = data.ToArray();
             int optionSelected = Menu(options, $"Elija el {prompt} que desea eliminar\n");
-            if (DeleteConfirmMenu())
+            if (DeleteConfirmMenu(prompt))
             {
                 using FileStream fs = new FileStream(path, FileMode.Create);
                 using StreamWriter writer = new StreamWriter(fs);
@@ -505,43 +527,46 @@ namespace student_roulette
             else
             {
                 result = rolsSelected;
-                int change = Menu(rols.ToArray(), $"\n\nElija el Nuevo rol del estudiante (antiguo rol: {rolToChange}\n", true);
-
-                //Se debe resolver el asunto de que aqui siempre devolvera -1 porque los roles guardados en result no tienen los caracteres "(defaul) por ende la comparacion siempre devolvera -1"
-                int exist = Array.IndexOf(result, rols[change]);
+                int change = Menu(rols.ToArray(), $"\n\nElija el Nuevo rol del estudiante (antiguo rol: {rolToChange})\n", true);
+                string newRol = rols[change].Contains("(default)") ? rols[change].Remove(rols[change].IndexOf(" (")) : rols[change];
+                int exist = Array.IndexOf(result, newRol);
 
                 if (exist == -1)
                 {
-                    for(int i = 0; i < result.Length; i++)
+                    for (int i = 0; i < result.Length; i++)
                     {
-                        if (result[i] == rolToChange) result[i] = rols[change].Remove(rols[change].IndexOf(" (")).Trim();
+                        if (result[i] == rolToChange) result[i] = newRol;
                     }
                 }
                 else
                 {
                     Clear();
-                    Write("Ambos estudiantes no pueden tener el mismo rol...");
+                    Write("No se puede repetir un rol");
                     Thread.Sleep(1000);
                     Clear();
                 }
-
-                //for (int i = 0; i < result.Length; i++)
-                //{
-                //    //if (result[i].Contains(rolToChange) && !(result[1].Contains(rolToChange)))
-                //    if ((Array.IndexOf(result, rols[change]) == -1))
-                //    {
-                //        //result[i] = rols[change];
-                //        result[i] = rols[change].Contains("(default)") ? rols[change].Remove(rols[change].IndexOf(" (")).Trim() : rols[change];
-                //    }
-                //    else
-                //    {
-                        
-                //    }
-                //}
             }
 
             return result;
         }
+
+        static void Log(int firstStudent, int secondStudent, string[] rols, string path)
+        {
+            string line = $"{students[firstStudent]},{students[secondStudent]},{rols[0]},{rols[1]},{DateTime.Now}";
+
+            using FileStream fs = new FileStream(path, FileMode.Append);
+            using StreamWriter writer = new StreamWriter(fs);
+            writer.WriteLine(line);
+        }
+
+        static string[] GetLastStudents(string path)
+        {
+            string[] result = File.ReadAllLines(path);
+            string[] lastStudents = result[result.Length - 1].Split(",");
+
+            return lastStudents;
+        }
+
         #endregion
 
         static string ValidateText(string prompt)
@@ -567,5 +592,88 @@ namespace student_roulette
 
             return student;
         }
+
+        static void StopWatch()
+        {
+            int min;
+            while (true)
+            {
+                Clear();
+                Write("Ingrese los minutos deseados (limite de 180 minutos): ");
+                if (int.TryParse(ReadLine(), out min) && min > 0 && min <= 180) break;
+
+                WriteLine("Debe ingresar un numero valido, no se aceptan valores negativos o mayores a 180");
+                Write("Presione Cualquier tecla para intentar nuevamente, ESC para salir del cronometro");
+
+                if (ReadKey(true).Key == ConsoleKey.Escape) return;
+            }
+
+            Clear();
+            string marker = "|";
+            for (int i = 0; i < min; i++)
+            {
+                for (int j = 0; j < 60; j++)
+                {
+                    DrawResult(students[firstStudent], students[secondStudent], rolsSelected[0], rolsSelected[1]);
+                    WriteLine("Cronometro");
+                    WriteLine($"{(i > 9 ? "" : "0")}{i}:{(j > 9 ? "" : "0")}{j}       {marker}");
+                    WriteLine("\n\nPresione cualquier Tecla para salir...");
+
+                    if (KeyAvailable) return;
+                    Thread.Sleep(500);
+
+                    Clear();
+                    if (marker.Equals("\\")) marker = "|";
+                    if (marker.Equals("-")) marker = "\\";
+                    if (marker.Equals("/")) marker = "-";
+                    if (marker.Equals("|")) marker = "/";
+                }
+            }
+        }
+
+        #region Login
+        //Falta validar si el usuario deja el campo vacio y tambien que no se pase de la logitud permitida.
+        static bool Login()
+        {
+            string userName = string.Empty, password = string.Empty;
+            LoadingAnimation("\r\n ▄▄▄▄    ██▓▓█████  ███▄    █ ██▒   █▓▓█████  ███▄    █  ██▓▓█████▄  ▒█████  \r\n▓█████▄ ▓██▒▓█   ▀  ██ ▀█   █▓██░   █▒▓█   ▀  ██ ▀█   █ ▓██▒▒██▀ ██▌▒██▒  ██▒\r\n▒██▒ ▄██▒██▒▒███   ▓██  ▀█ ██▒▓██  █▒░▒███   ▓██  ▀█ ██▒▒██▒░██   █▌▒██░  ██▒\r\n▒██░█▀  ░██░▒▓█  ▄ ▓██▒  ▐▌██▒ ▒██ █░░▒▓█  ▄ ▓██▒  ▐▌██▒░██░░▓█▄   ▌▒██   ██░\r\n░▓█  ▀█▓░██░░▒████▒▒██░   ▓██░  ▒▀█░  ░▒████▒▒██░   ▓██░░██░░▒████▓ ░ ████▓▒░\r\n░▒▓███▀▒░▓  ░░ ▒░ ░░ ▒░   ▒ ▒   ░ ▐░  ░░ ▒░ ░░ ▒░   ▒ ▒ ░▓   ▒▒▓  ▒ ░ ▒░▒░▒░ \r\n▒░▒   ░  ▒ ░ ░ ░  ░░ ░░   ░ ▒░  ░ ░░   ░ ░  ░░ ░░   ░ ▒░ ▒ ░ ░ ▒  ▒   ░ ▒ ▒░ \r\n ░    ░  ▒ ░   ░      ░   ░ ░     ░░     ░      ░   ░ ░  ▒ ░ ░ ░  ░ ░ ░ ░ ▒  \r\n ░       ░     ░  ░         ░      ░     ░  ░         ░  ░     ░        ░ ░  \r\n      ░                           ░                          ░               \r\n", withAnimation);
+
+            CursorVisible = true;
+            DrawLogin();
+            CursorTop = 1;
+            CursorLeft = 13;
+            userName = ReadLine()!.ToLower();
+
+            CursorTop = 3;
+            CursorLeft = 13;
+            password = HidePassword();
+            CursorVisible = true;
+            return userName == "ov3rst" && password == "123456";
+        }
+
+        static void DrawLogin()
+        {
+            WriteLine("╔══════════╦══════════╗");
+            WriteLine("║  Login   ║          ║");
+            WriteLine("╠══════════╬══════════╣");
+            WriteLine("║ Password ║          ║");
+            Write("╚══════════╩══════════╝");
+        }
+
+        static string HidePassword()
+        {
+            string password = string.Empty;
+            while (true)
+            {
+                var key = ReadKey(true);
+                if (key.Key == ConsoleKey.Enter) break;
+
+                password += Convert.ToString(key.KeyChar);
+                Write("*");
+            }
+
+            return password;
+        }
+        #endregion
     }
 }

@@ -37,6 +37,7 @@ namespace student_roulette
         static void Main(string[] args)
         {
             CursorVisible = false;
+            //OutputEncoding = System.Text.Encoding.Unicode;
 
             Clear();
             InitialMenu();
@@ -73,7 +74,7 @@ namespace student_roulette
                 if (rolsSelected.Length == 0)
                     rolsSelected = GetOrChangeRols(rols);
 
-                DrawResult(students[firstStudent], students[secondStudent], rolsSelected[0], rolsSelected[1]/*rolsSelected*/);
+                DrawResult(students[firstStudent], students[secondStudent], rolsSelected[0], rolsSelected[1]);
                 newStudent = CompleteMenu();
 
                 if (newStudent == 1 || newStudent == 3)
@@ -83,13 +84,23 @@ namespace student_roulette
                     repeatedNumbers.Add(secondStudent);
                 }
 
-                if (repeatedNumbers.Count + 1 == students.Count)
+                if (repeatedNumbers.Count == students.Count - 1 || repeatedNumbers.Count == students.Count)
                 {
-                    if (!withAnimation)
+                    int aloneStudent = -1;
+                    for (int i = 0; i < repeatedNumbers.Count; i++)
                     {
-                        WriteLine("Ya han participado todos los estudiantes volviendo al menu...");
-                        Thread.Sleep(1000);
+                        if (repeatedNumbers.Contains(i)) continue;
+                        else aloneStudent = i;
                     }
+
+                    Clear();
+                    if (aloneStudent != -1)
+                        WriteLine($"El estudiante \"{students[aloneStudent]}\" se quedo sin participar, volviendo al menú...");
+                    else
+                        WriteLine("Ya han participado todos los estudiantes volviendo al menu...");
+
+                    Thread.Sleep(3000);
+
                     repeatedNumbers.Clear();
                     LoadingAnimation("\r\n ██▀███  ▓█████  ██▓ ███▄    █  ██▓ ▄████▄   ██▓ ▄▄▄       ███▄    █ ▓█████▄  ▒█████  \r\n▓██ ▒ ██▒▓█   ▀ ▓██▒ ██ ▀█   █ ▓██▒▒██▀ ▀█  ▓██▒▒████▄     ██ ▀█   █ ▒██▀ ██▌▒██▒  ██▒\r\n▓██ ░▄█ ▒▒███   ▒██▒▓██  ▀█ ██▒▒██▒▒▓█    ▄ ▒██▒▒██  ▀█▄  ▓██  ▀█ ██▒░██   █▌▒██░  ██▒\r\n▒██▀▀█▄  ▒▓█  ▄ ░██░▓██▒  ▐▌██▒░██░▒▓▓▄ ▄██▒░██░░██▄▄▄▄██ ▓██▒  ▐▌██▒░▓█▄   ▌▒██   ██░\r\n░██▓ ▒██▒░▒████▒░██░▒██░   ▓██░░██░▒ ▓███▀ ░░██░ ▓█   ▓██▒▒██░   ▓██░░▒████▓ ░ ████▓▒░\r\n░ ▒▓ ░▒▓░░░ ▒░ ░░▓  ░ ▒░   ▒ ▒ ░▓  ░ ░▒ ▒  ░░▓   ▒▒   ▓▒█░░ ▒░   ▒ ▒  ▒▒▓  ▒ ░ ▒░▒░▒░ \r\n  ░▒ ░ ▒░ ░ ░  ░ ▒ ░░ ░░   ░ ▒░ ▒ ░  ░  ▒    ▒ ░  ▒   ▒▒ ░░ ░░   ░ ▒░ ░ ▒  ▒   ░ ▒ ▒░ \r\n  ░░   ░    ░    ▒ ░   ░   ░ ░  ▒ ░░         ▒ ░  ░   ▒      ░   ░ ░  ░ ░  ░ ░ ░ ░ ▒  \r\n   ░        ░  ░ ░           ░  ░  ░ ░       ░        ░  ░         ░    ░        ░ ░  \r\n                                   ░                                  ░               \r\n", withAnimation);
                     break;
